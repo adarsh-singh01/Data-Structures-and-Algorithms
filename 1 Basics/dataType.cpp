@@ -24,7 +24,7 @@ int main() {
     //string s;
     //cout << "Enter a string: ";
     //cin>> s;
-    //cout << "You entered: " << s << endl;
+    //cout << "You entered: " << s << endl;//only single word input
     
 
     //string s1, s2;
@@ -32,9 +32,15 @@ int main() {
     //cin >> s1 >> s2;
     //cout << "You entered: " << s1 << " and " << s2 << endl;
 
-    string str1;
-    getline(cin, str1);//picks full line including spaces but doesnt pick after \n i.e new line
-    cout << "You entered: " << str << endl;
+    //string str1;
+    //getline(cin, str1);//picks full line including spaces but doesnt pick after \n i.e new line
+    //cout << "You entered: " << str1 << endl;
+
+
+    //char input :for single character input
+    char ch;
+    cin >> ch;
+    cout << "You entered: " << ch << endl;
 
     return 0;
 }
