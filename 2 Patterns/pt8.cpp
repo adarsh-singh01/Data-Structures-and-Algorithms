@@ -9,7 +9,7 @@ void pt8(int n){
         }
 
         //stars
-        for(int j=1;j<=2*(n-i)+1;j++){
+        for(int j=1;j<=2*(n-i)+1;j++){//bcoz in each row the no. of stars is equal to (2*(n-i)+1)
             cout<<"*";
         }
 
@@ -27,3 +27,15 @@ int main(){
     pt8(5);
     return 0;
 }
+
+/*
+
+OUTPUT IS 
+
+*********
+-*******-
+--*****--
+---***---
+----*----
+
+*/
