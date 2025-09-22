@@ -23,7 +23,7 @@ void pt19(int n){
         cout<<endl;
     }
 
-    iniS=8;
+    iniS=2*n-2;
     for(int i=1;i<=n;i++){
 
         //stars
