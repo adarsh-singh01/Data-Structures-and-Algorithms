@@ -163,4 +163,16 @@ void recurse(int n) {
 3. Be aware of **stack depth** limits (especially for large inputs).
 4. Consider **iterative solutions** or **tail recursion** if needed.
 
+
+## Difference Btw Parameterized and Functional Recursion
+
+
+| Feature                 | Parameterized                  | Functional                         |
+| ----------------------- | ------------------------------ | ---------------------------------- |
+| Shape of tree           | Straight down (tail recursion) | Downward → then combines on return |
+| Passes result as param? | ✅ Yes                          | ❌ No (uses return values)          |
+| Combines results later? | ❌ No                           | ✅ Yes (adds during return)         |
+| Base case returns       | Nothing / prints directly      | Returns 0                          |
+| Example usage           | `sumParameterized(3, 0)`       | `sumFunctional(3)`                 |
+
 ---
