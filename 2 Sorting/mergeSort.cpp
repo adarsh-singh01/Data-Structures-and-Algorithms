@@ -101,3 +101,49 @@ It’s a stable sorting algorithm.
 
 
 */
+
+
+/*
+
+
+Initial Array:
+[5, 2, 9, 1, 6, 3]
+
+Dividing: [0, 5] -> [0, 2] and [3, 5]
+Dividing: [0, 2] -> [0, 1] and [2, 2]
+Dividing: [0, 1] -> [0, 0] and [1, 1]
+
+Merging:
+Left: [5]
+Right: [2]
+After Merge: [2, 5]
+
+Merging:
+Left: [2, 5]
+Right: [9]
+After Merge: [2, 5, 9]
+
+Dividing: [3, 5] -> [3, 4] and [5, 5]
+Dividing: [3, 4] -> [3, 3] and [4, 4]
+
+Merging:
+Left: [1]
+Right: [6]
+After Merge: [1, 6]
+
+Merging:
+Left: [1, 6]
+Right: [3]
+After Merge: [1, 3, 6]
+
+Merging:
+Left: [2, 5, 9]
+Right: [1, 3, 6]
+After Merge: [1, 2, 3, 5, 6, 9]
+
+Sorted Array:
+[1, 2, 3, 5, 6, 9]
+
+
+
+*/
