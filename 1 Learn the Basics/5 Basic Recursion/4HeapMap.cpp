@@ -51,15 +51,3 @@ int main() {
 
     return 0;
 }
-
-
-/*
-hashing  using division method,folding method,mid square method etc.
-
-if someone says that max array size is 10 or something like that then 
-we'll learn divison method
-linear chaining
-whats collision?
-why its rare in unordered_map?
-
-*/
