@@ -259,17 +259,28 @@ Quick Sort is a divide-and-conquer algorithm that picks a pivot and partitions t
 ### Example:
 
 ```
-Array: [10, 7, 8, 9, 1, 5]
+Array: [64, 25, 12, 22, 11]
 
-Pivot = 5
-Partition → [1, 5, 8, 9, 10, 7]
+Pick pivot = 11  
+→ Left: []  
+→ Right: [64, 25, 12, 22]  
+→ Result: [11 + sort(right)]
 
-Left: [1]
-Right: [8, 9, 10, 7]
+Sort [64, 25, 12, 22]  
+→ Pivot = 22  
+→ Left: [12]  
+→ Right: [64, 25]  
+→ Result: [12 + 22 + sort(right)]
 
-Repeat on Right side similarly...
+Sort [64, 25]  
+→ Pivot = 25  
+→ Left: []  
+→ Right: [64]  
+→ Result: [25, 64]
 
-Eventually sorted: [1, 5, 7, 8, 9, 10]
+Final combined:  
+[11, 12, 22, 25, 64]
+
 ```
 
 ### Time Complexity:
