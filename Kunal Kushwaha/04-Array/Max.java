@@ -20,12 +20,12 @@ public class Max {
     static int maxRange(int[] arr, int start, int end) {
         // ✅ Edge Case 1: Check if array is null
         if (arr == null) {
-            return -1;
+            return -1;//returning -1 to indicate invalid input
         }
 
         // ✅ Edge Case 2: Check if range is invalid (start > end)
         if (start > end) {
-            return -1;
+            return -1;//returning -1 to indicate invalid input
         }
 
         // ✅ Edge Case 3: Check if indices are out of bounds
