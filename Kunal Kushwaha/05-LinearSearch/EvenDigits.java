@@ -98,4 +98,21 @@ public class EvenDigits {
         return count;
     }
 
+    //Leetcode solution
+    /*
+     
+        public int findNumbers(int[] nums) {
+        int ret = 0;
+
+        for (int num : nums) {
+            if ((int)Math.log10(num) % 2 == 1) {
+                ret++;
+            }
+        }
+
+        return ret;
+    }
+
+     */
+
 }
