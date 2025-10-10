@@ -10,7 +10,7 @@ public class FirstAndLast {
     public static int[] searchRange(int[] nums, int target) {
         int[] ans = {-1, -1}; // Default if target not found
         ans[0] = search(nums, target, true);  // Find first occurrence
-        if (ans[0] != -1) {
+        if (ans[0] != -1) {// If first occurrence is found, search for last but if first occurrence is not found then there is no point in searching for last occurrence because if first occurrence is not found it means target is not present in the array
             ans[1] = search(nums, target, false);  // Find last occurrence
         }
         return ans;
