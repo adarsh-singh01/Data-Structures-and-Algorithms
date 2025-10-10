@@ -38,7 +38,7 @@ public class BinarySearch {
                 start = mid + 1;
             }
             // If target is equal to mid element, return the index
-            else {
+            else {//its in else block because if above conditions are false it means target==arr[mid]
                 return mid;
             }
         }

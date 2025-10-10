@@ -19,7 +19,7 @@ public class Ceil {
             if (target < arr[mid]) {
                 end = mid - 1;
             } else if (target > arr[mid]) {
-                start = mid + 1;
+                start = mid + 1;//in ceil we find the smallest number >= target and at the end target>mid will happen ...so this code will do start=mid+1 and the condition of while loop which is start<=end will be violated...and that value of "start" will be the ceil
             } else {
                 // Target is found, it's its own ceiling
                 return arr[mid];
@@ -31,7 +31,7 @@ public class Ceil {
 
         // This is the actual ceiling
         if (start < arr.length) {
-            return arr[start];//it is start because start will be at the smallest number > target
+            return arr[start];//the reason why it is start is written in the above comments...in short when while loop ends start=end+1;
         }
 
         // No ceiling exists
