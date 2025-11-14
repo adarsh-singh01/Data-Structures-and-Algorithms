@@ -401,3 +401,646 @@ x |= x>>2  -> still 0000..1111
 
 ---
 
+
+# Walkthrough of `BitwiseUtils` methods — binary traces & ASCII diagrams
+
+> Note: Java `int` is 32-bit two’s-complement. For readability I show compact bit-views (8 or 16 bits) unless sign behavior matters — and I call out when full 32-bit behavior or sign-extension is relevant.
+
+---
+
+## 1) `isOdd(int n)` — Check if number is odd
+
+**Purpose:** Return `true` if `n` is odd, else `false`.
+
+**Input:** `n = 7`
+
+**Operation:** `(n & 1) == 1`
+
+**Binary trace (8-bit view):**
+
+```
+n = 7  ->  0000 0111
+1      ->  0000 0001
+n & 1  ->  0000 0001  = 1  => odd
+```
+
+**ASCII explanation:**
+
+```
+00000111  (7)
+&00000001  (1)
+-------- 
+00000001  => 1 -> true (odd)
+```
+
+**Why this works:** The least significant bit (LSB) indicates parity. If LSB = 1 → odd.
+
+**Edge cases:** Works for positive and negative numbers (two’s complement preserves LSB parity).
+**Complexity:** O(1) time, O(1) space.
+
+---
+
+## 2) `findUniqueWithXor(int[] arr)` — XOR all to find unique element
+
+**Purpose:** When every element appears twice except one, XORing all yields the unique element.
+
+**Input:** `arr = {2, 3, 2, 4, 4}`
+
+**Operation:** XOR in sequence:
+
+```
+xor = 0
+xor ^= 2 -> 00000010 (2)
+xor ^= 3 -> 00000010 ^ 00000011 = 00000001 (1)
+xor ^= 2 -> 00000001 ^ 00000010 = 00000011 (3)
+xor ^= 4 -> 00000011 ^ 00000100 = 00000111 (7)
+xor ^= 4 -> 00000111 ^ 00000100 = 00000011 (3)
+result = 3
+```
+
+**ASCII trace:**
+
+```
+0 ^ 2 = 2
+2 ^ 3 = 1
+1 ^ 2 = 3
+3 ^ 4 = 7
+7 ^ 4 = 3  -> unique = 3
+```
+
+**Why this works:** XOR cancels pairs (`x ^ x = 0`), and `0 ^ y = y`. Order independent.
+
+**Edge cases:** If there are elements that appear odd times other than 1, this method fails.
+**Complexity:** O(n) time, O(1) space.
+
+---
+
+## 3) `highestBitMask(int x)` — Mask of most significant set bit
+
+**Purpose:** Return a mask with only the highest (leftmost) set bit preserved (e.g., for 13 -> 8).
+
+**Input:** `x = 37` (example requested)
+
+* `37` decimal → binary `0010 0101` (8-bit view). Highest set bit is the bit for value `32` (2^5).
+
+**Algorithm used:** propagate the highest bit to all lower bits, then isolate it:
+
+```
+x |= x >> 1;
+x |= x >> 2;
+x |= x >> 4;
+x |= x >> 8; ... (depending on word size)
+return (x + 1) >>> 1;
+```
+
+**Step-by-step binary trace (start with 8-bit):**
+
+Start:
+
+```
+x =  00100101  (37)
+```
+
+1. `x |= x >> 1`
+
+```
+x >> 1 = 00010010
+x |=    00100101
+        00010010
+result:  00110111
+```
+
+2. `x |= x >> 2`
+
+```
+x >> 2 = 00001101
+x |=    00110111
+        00001101
+result:  00111111
+```
+
+3. `x |= x >> 4`
+
+```
+x >> 4 = 00000011
+x |=    00111111
+        00000011
+result:  00111111 (unchanged)
+```
+
+(For 8-bit we are done; in 32-bit code we did further shifts up to 16 bits etc — those won't change it further.)
+
+Now `x = 00111111` (binary), which is `63`.
+
+Compute `(x + 1) >>> 1`:
+
+```
+x + 1 = 01000000 (64)
+(x + 1) >>> 1 = 00100000 (32)  => highest bit mask
+```
+
+**ASCII steps:**
+
+```
+initial  : 0010 0101 (37)
+after ops: 0011 1111 (63)
+x+1      : 0100 0000 (64)
+(x+1)>>>1: 0010 0000 (32) => mask
+```
+
+**Result:** `32` (`0010 0000`) — correct highest-bit mask.
+
+**Why this works:** Propagating sets all bits below the MSB to 1. Adding 1 produces a carry that leaves only a single 1 above the original MSB; shifting right isolates the original MSB as a single-bit mask.
+
+**Edge cases:**
+
+* `x = 0` → return 0.
+* For `int` 32-bit, the code uses shifts up to 16 to cover full word.
+
+**Complexity:** O(1) time (fixed small number of bit ops), O(1) space.
+
+---
+
+## 4) `setIthBit(int n, int i)` — Set i-th bit to 1 (0-based)
+
+**Purpose:** Return `n` with the bit at index `i` set to 1.
+
+**Input:** `n = 5 (00000101)`, `i = 2`.
+
+**Operation:** `n | (1 << i)`
+
+**Trace:**
+
+```
+(1 << 2) = 00000100 (4)
+n =        00000101 (5)
+n | mask = 00000101 (5)  // already set
+```
+
+**Result:** 5 (unchanged because bit 2 was already 1).
+
+**If n=1 (00000001) and i=2:**
+
+```
+1 << 2 = 00000100
+1 | 00000100 = 00000101 = 5
+```
+
+**Why it works:** OR with mask turns target bit to 1 without affecting other bits.
+
+**Complexity:** O(1).
+
+---
+
+## 5) `clearIthBit(int n, int i)` — Clear (reset) i-th bit to 0
+
+**Purpose:** Return `n` with the bit at index i set to 0.
+
+**Input:** `n = 5 (00000101)`, `i = 0`.
+
+**Operation:** `n & ~(1 << i)`
+
+**Trace:**
+
+```
+(1<<0) = 00000001
+~(1<<0)= 11111110
+n =      00000101
+n & ~ =  00000100 = 4
+```
+
+**Result:** 4 (`00000100`), LSB cleared.
+
+**Why it works:** `~(1<<i)` is mask with zeros at i and ones elsewhere. ANDing clears the target bit.
+
+**Complexity:** O(1).
+
+---
+
+## 6) `toggleIthBit(int n, int i)` — Flip the i-th bit
+
+**Purpose:** Flip the bit: 0→1, 1→0.
+
+**Input:** `n = 8 (00001000)`, `i = 3`
+
+**Operation:** `n ^ (1 << i)`
+
+**Trace:**
+
+```
+1<<3 = 00001000
+n    = 00001000
+n ^ mask = 00000000 => 0
+```
+
+**If input was `n=0`**:
+
+```
+0 ^ 00001000 = 00001000 => 8
+```
+
+**Why it works:** XOR with 1 flips the bit, XOR with 0 keeps it same.
+
+**Complexity:** O(1).
+
+---
+
+## 7) `rightmostSetBitMask(int n)` — mask with only lowest set bit (n & -n)
+
+**Purpose:** Return a mask with only the rightmost (least significant) set bit, `0` if `n=0`.
+
+**Input:** `n = 12 (00001100)`
+
+**Operation:** `n & (-n)`
+
+**Binary trace (8-bit):**
+
+```
+n      = 00001100 (12)
+~n     = 11110011
+-n     = ~n + 1 = 11110011 + 1 = 11110100 (two's complement)
+n & -n = 00001100 & 11110100 = 00000100 (4)
+```
+
+**ASCII:**
+
+```
+00001100 (n)
+&11110100 (-n)
+=00000100 => mask = 4
+```
+
+**Why it works:** Two’s complement construction isolates the lowest set bit.
+
+**Edge cases:** `n=0` → result 0. For negative numbers, behavior still isolates LSB because two’s complement math is consistent.
+
+**Complexity:** O(1).
+
+---
+
+## 8) `negativeViaTwosComplement(int n)` — compute -n as `~n + 1`
+
+**Purpose:** Show two’s complement negative calculation.
+
+**Input:** `n=5`
+
+**Trace (8-bit):**
+
+```
+n      = 00000101
+~n     = 11111010
+~n + 1 = 11111011  => -5 in 8-bit two's complement 
+```
+
+**Check:** In Java 32-bit, `(~n) + 1` equals `-n`.
+
+**Why it works:** Two’s complement representation: invert bits and add 1.
+
+**Caveat:** Displaying negative numbers in n-bit requires understanding of two’s complement: `11111011` interpreted as signed is `-5`.
+
+**Complexity:** O(1).
+
+---
+
+## 9) `countSetBits(int n)` — Brian Kernighan’s algorithm
+
+**Purpose:** Count number of `1` bits efficiently by repeatedly clearing lowest set bit.
+
+**Input:** `n = 29` → binary `00011101` (bits = 4)
+
+**Algorithm:** while `n != 0`: `n = n & (n - 1)`, increment count.
+
+**Trace:**
+
+```
+n = 00011101 (29) count=0
+n & (n-1) -> 00011100 (28) count=1
+n & (n-1) -> 00011000 (24) count=2
+n & (n-1) -> 00010000 (16) count=3
+n & (n-1) -> 00000000 (0)  count=4
+stop -> count=4
+```
+
+**ASCII progression:**
+
+```
+29: 00011101
+28: 00011100
+24: 00011000
+16: 00010000
+0 : 00000000 -> done
+```
+
+**Complexity:** O(k) where k = number of set bits. In worst-case for 32-bit it's O(32) → O(1) practically; in bit-length terms O(log n).
+
+---
+
+## 10) `xorFrom0ToN(int n)` — XOR(0..n)
+
+**Purpose:** Compute XOR of all integers from 0 to n in O(1) using pattern mod 4.
+
+**Pattern:** n % 4 => result
+
+* 0 → n
+* 1 → 1
+* 2 → n + 1
+* 3 → 0
+
+**Example:** `n=7` (7 % 4 = 3) → result = 0.
+
+**Brief reason:** XOR pattern repeats every 4 numbers due to cancellations.
+
+**Complexity:** O(1).
+
+---
+
+## 11) `xorRangeAB(int a, int b)` — XOR of [a..b]
+
+**Purpose:** XOR(0..b) ^ XOR(0..a-1) gives XOR(a..b).
+
+**Example:** `a=3, b=9`
+
+```
+xor(0..9)  ^ xor(0..2)  => result
+```
+
+Compute via `xorFrom0ToN`.
+
+**Complexity:** O(1).
+
+---
+
+## 12) `flipAndInvertImage(int[][] A)` — flip horizontally and invert
+
+**Purpose:** For each row, reverse the row and invert bits.
+
+**Input sample:**
+
+```
+A = [
+ [1,1,0],
+ [1,0,1],
+ [0,0,0]
+]
+```
+
+**Operation:** For each row, swap left/right and invert (`1 ^ value`), doing both in place.
+
+**Trace row-by-row:**
+
+Row0 `[1,1,0]`
+
+* l=0 r=2: left=1, right=0 -> A[0]=1^0=1, A[2]=1^1=0 => after step: [1,1,0] (same)
+* l++ r-- => l=1 r=1: l==r -> invert center: 1 -> 0? Wait code in BitwiseUtils did `while (l <= r)` and swapped with invert; for center, it will set `A[mid] = 1 ^ A[mid]` twice? Let's clarify the code's behavior: it assigns `A[l] = 1 ^ right; A[r] = 1 ^ left;` When l==r, left==right==original mid => both assignments overwrite same location, but both will set appropriate inverted value. For center `v`, both will set `1 ^ v` ultimately correct.
+
+Final matrix after all rows processed:
+
+```
+[
+ [1,0,0] flipped+inverted ???  // Let's compute carefully below with correct method.
+]
+```
+
+Let's perform carefully for each row:
+
+Row0 `[1,1,0]`
+
+* l=0 r=2: left=1, right=0
+
+  * A[0] = 1 ^ right = 1 ^ 0 = 1
+  * A[2] = 1 ^ left  = 1 ^ 1 = 0
+    => row becomes [1,1,0]
+* l=1 r=1: left=1, right=1
+
+  * A[1] = 1 ^ right = 0
+  * A[1] = 1 ^ left = 0 (same) => center becomes 0
+    Final row0: `[1,0,0]`
+
+Row1 `[1,0,1]`
+
+* l=0 r=2: left=1 right=1
+
+  * A[0] = 1 ^ 1 = 0
+  * A[2] = 1 ^ 1 = 0
+* l=1 r=1: center 0 -> A[1] = 1 ^ 0 = 1
+  Final row1: `[0,1,0]`
+
+Row2 `[0,0,0]`
+
+* l=0 r=2: left=0 right=0
+
+  * A[0] = 1 ^ 0 = 1
+  * A[2] = 1 ^ 0 = 1 => row becomes [1,0,1]
+* center 0 -> 1 ^ 0 = 1 -> center becomes 1
+  Final row2: `[1,1,1]`
+
+**Final matrix:**
+
+```
+[1,0,0]
+[0,1,0]
+[1,1,1]
+```
+
+**ASCII before/after row0:**
+
+```
+[1 1 0] -> flip -> [0 1 1] -> invert -> [1 0 0]
+```
+
+But our method combined flip+invert in one pass.
+
+**Complexity:** O(m*n) time, O(1) extra space (in place).
+
+---
+
+## 13) `isPowerOfTwo(int n)` — test power of 2
+
+**Purpose:** Return true if `n` is power of two.
+
+**Input:** `n = 16` → `10000`
+
+**Test:** `n > 0 && (n & (n-1)) == 0`
+
+**Trace:**
+
+```
+16 = 00010000
+15 = 00001111
+16 & 15 = 00000000 => 0 -> true
+```
+
+**Why:** power of two has exactly one bit set, clearing it yields 0.
+
+**Edge:** `n=0` -> false. Negative numbers -> false.
+
+**Complexity:** O(1).
+
+---
+
+## 14) `fastPow(long a, long b)` — binary exponentiation
+
+**Purpose:** Compute `a^b` in O(log b) multiplications by using binary bits of exponent.
+
+**Input:** `a=2, b=10`
+
+**Trace:**
+
+```
+res=1, base=2, b=10(1010)
+b & 1? no -> base=4, b=5
+b & 1? yes -> res=1*4? Wait step-by-step proper:
+
+Initial: res=1, base=2, b=10
+b=10 (1010)
+b&1==0 -> skip multiply
+base=4, b=5
+
+b=5 (0101)
+b&1==1 -> res=res*4=4
+base=16, b=2
+
+b=2 (0010)
+b&1==0 -> skip
+base=256, b=1
+
+b=1
+b&1==1 -> res=4*256=1024
+b=0 -> done
+
+Result = 1024
+```
+
+**Complexity:** O(log b) time.
+
+---
+
+## 15) `digitsInBase(long n, int b)` — digits count in base b
+
+**Purpose:** Return number of digits of n in base b: `floor(log_b(n)) + 1`
+
+**Input:** `n=255`, `b=16` (hex)
+
+**Trace:**
+
+```
+255 base 16 = FF (two hex digits) => digits = 2
+Math approach: log_16(255) = log(255)/log(16) ≈ 1.99 => floor 1 +1 = 2
+```
+
+**Edge:** n<=0 -> return 0 or handle separately.
+
+**Complexity:** O(1) using logs; O(log_b n) if computed by repeated division.
+
+---
+
+## 16) `nthMagicNumber(int n)` — magic numbers (powers of 5 sum)
+
+**Purpose:** Many variations exist; this one uses binary digits of n to pick powers of 5: accumulate `5^1, 5^2, ...` when corresponding bit in n is 1.
+
+**Input:** `n = 6` → binary `110` (bits LSB to MSB: 0,1,1)
+
+**Trace:**
+
+```
+power=5, ans=0
+n=6 -> (n&1)=0 -> ans += 0
+power *=5 -> 25 ; n>>=1 -> n=3
+n=3 -> (n&1)=1 -> ans += 25  => ans=25
+power *=5 -> 125 ; n>>=1 -> n=1
+n=1 -> (n&1)=1 -> ans += 125 => ans=150
+n=0 -> done
+return 150
+```
+
+**Interpretation:** bits correspond to selecting 5, 25, 125, ... Note different problems vary (some shift indexing).
+
+**Complexity:** O(log n) time (#bits).
+
+---
+
+## 17) `indexOfRightmostSetBit(int n)` — index of rightmost set bit (0-based)
+
+**Purpose:** Return index (position) of LSB that is set.
+
+**Input:** `n = 40` -> binary `00101000` → rightmost set bit at index 3 (2^3 = 8).
+
+**Operation:** compute mask `n & -n = 00001000`, then trailing zeros = index.
+
+**Trace:**
+
+```
+40 = 00101000
+40 & -40 = 00001000 (8)
+Integer.numberOfTrailingZeros(8) = 3 -> index 3
+```
+
+**Complexity:** O(1) using built-in.
+
+**Edge:** n=0 -> return -1.
+
+---
+
+## 18) `findSingleInPairs(int[] arr)` — alias of XOR unique (same as #2)
+
+**Purpose:** same as `findUniqueWithXor`.
+
+---
+
+## Additional conceptual notes (relevant to methods above)
+
+### - `n & (n - 1)` clears lowest set bit
+
+Example `n = 12 (1100)` -> `n & (n-1) = 1000 (8)`.
+
+### - `n & -n` isolates lowest set bit
+
+Example `n = 12 (1100)` -> mask = `0100 (4)`.
+
+### - Two’s complement negative
+
+`-n == (~n) + 1` always holds for signed integers in two’s complement.
+
+---
+
+# ASCII summary of common bit tricks
+
+**Clear lowest set bit**
+
+```
+n = 11011000
+n-1= 11010111
+n&(n-1)=11010000  // lowest 1 cleared
+```
+
+**Isolate lowest set bit**
+
+```
+n      = 11011000
+-n     = 00101000 (two's complement)
+n & -n = 00001000  // only lowest one remains
+```
+
+**Propagate highest bit to lower bits (then isolate)**
+
+```
+x    = 0010 0101
+x|=x>>1 -> 0011 0111
+x|=x>>2 -> 0011 1111
+x|=x>>4 -> 0011 1111
+(x+1) -> 0100 0000
+>>1    -> 0010 0000  // highest-mask
+```
+
+---
+
+# Final checklist & pitfalls to remember
+
+* Bit indexing: I used **0-based** in the code. E.g., `i=0` is LSB.
+* Shift overflow: shifting left by >= word-size is undefined or wraps — avoid.
+* Signed shifts: `>>` preserves sign; `>>>` zero-fills. For non-negative numbers, both behave the same.
+* When showing examples, I used small widths (8 bits) for readability — real `int` are 32-bit; negative numbers have sign extension.
+* Many bitwise tricks rely on two’s-complement representation (Java uses it).
+
+---
+
