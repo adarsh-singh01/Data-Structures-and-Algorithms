@@ -1,0 +1,2 @@
+things u add inside the args of funtions are passed onto next calls until u reach base case
+but if we add something inside funtion body without passing it as argument then its not passed to next calls...and its value is lost in next calls
